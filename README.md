@@ -9,6 +9,7 @@ Kanban Board is a Rails-first proof of concept for managing work across columns 
 - View a board with ordered columns and ordered cards.
 - Create cards inside a column.
 - Drag cards between columns and persist their new position.
+- Reorder cards within columns with smooth snap animations.
 - Assign cards to users inline.
 - Track common Kanban card fields like priority, estimate, due date, labels, and description.
 
@@ -26,13 +27,14 @@ Kanban Board is a Rails-first proof of concept for managing work across columns 
 
 - ✅ Demo board seeded with starter columns and cards.
 - ✅ Persistent card movement across columns.
+- ✅ Card reordering within columns with snap animations.
 - ✅ Scoped ordering for columns and cards.
 - ✅ Inline assignee changes with Turbo.
 - ✅ Card metadata: priority, labels, estimate, due date, and description.
 - ✅ Refined drag-and-drop with visual feedback and smooth animations.
 - ✅ Card duplication with Ctrl+C / Ctrl+V keyboard shortcuts.
 - ✅ Top menu bar with board clear and settings buttons.
-- ✅ Comprehensive integration and controller test coverage (34 tests).
+- ✅ Comprehensive test coverage (42 tests).
 
 ## Requirements
 
@@ -114,7 +116,7 @@ ruby bin/rails test
 Expected current result:
 
 ```text
-34 runs, 89 assertions, 0 failures, 0 errors, 0 skips
+42 runs, 112 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 ## Data Model
