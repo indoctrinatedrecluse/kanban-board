@@ -1,0 +1,3 @@
+<%= turbo_stream.replace @card do %>
+  <%= render "cards/card", card: @card, users: User.order(:name) %>
+<% end %>

@@ -1,0 +1,19 @@
+<main class="app-shell">
+  <header class="board-header">
+    <div>
+      <p class="eyebrow">Kanban POC</p>
+      <h1><%= @board.name %></h1>
+      <p><%= @board.description %></p>
+    </div>
+    <div class="board-stats">
+      <span><strong><%= @board.columns.sum { |column| column.cards.size } %></strong> cards</span>
+      <span><strong><%= @users.size %></strong> people</span>
+    </div>
+  </header>
+
+  <section class="board" data-controller="kanban">
+    <% @board.columns.each do |column| %>
+      <%= render "column", column: column, users: @users, card: @card %>
+    <% end %>
+  </section>
+</main>

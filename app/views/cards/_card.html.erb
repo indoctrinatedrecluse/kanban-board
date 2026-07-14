@@ -1,0 +1,36 @@
+<article
+  id="<%= dom_id(card) %>"
+  class="kanban-card priority-<%= card.priority.presence || "none" %>"
+  draggable="true"
+  data-card-id="<%= card.id %>"
+  data-action="dragstart->kanban#dragstart dragend->kanban#dragend"
+>
+  <div class="card-topline">
+    <span class="priority"><%= (card.priority.presence || "none").titleize %></span>
+    <% if card.estimate.present? %>
+      <span class="estimate"><%= card.estimate %> pt</span>
+    <% end %>
+  </div>
+
+  <h3><%= card.title %></h3>
+  <% if card.description.present? %>
+    <p><%= card.description %></p>
+  <% end %>
+
+  <% if card.label_list.any? %>
+    <div class="labels">
+      <% card.label_list.each do |label| %>
+        <span><%= label %></span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <footer>
+    <%= form_with model: card, class: "assignee-form" do |form| %>
+      <%= form.select :assignee_id, [["Unassigned", ""]] + users.map { |user| [user.name, user.id] }, {}, onchange: "this.form.requestSubmit()" %>
+    <% end %>
+    <% if card.due_on.present? %>
+      <time datetime="<%= card.due_on.iso8601 %>"><%= card.due_on.strftime("%b %-d") %></time>
+    <% end %>
+  </footer>
+</article>

@@ -1,0 +1,31 @@
+<article class="kanban-column">
+  <header class="column-header">
+    <div>
+      <h2><%= column.name %></h2>
+      <span><%= pluralize(column.cards.size, "card") %></span>
+    </div>
+    <% if column.wip_limit.present? %>
+      <span class="wip-limit">WIP <%= column.wip_limit %></span>
+    <% end %>
+  </header>
+
+  <div
+    class="card-list"
+    data-kanban-target="column"
+    data-column-id="<%= column.id %>"
+    data-action="dragover->kanban#dragover drop->kanban#drop"
+  >
+    <% column.cards.each do |card| %>
+      <%= render "cards/card", card: card, users: users %>
+    <% end %>
+  </div>
+
+  <%= form_with model: [column, Card.new(priority: "medium")], class: "new-card-form" do |form| %>
+    <%= form.text_field :title, placeholder: "New card title", required: true %>
+    <div class="form-row">
+      <%= form.select :priority, Card::PRIORITIES.map { |priority| [priority.titleize, priority] } %>
+      <%= form.select :assignee_id, [["Unassigned", ""]] + users.map { |user| [user.name, user.id] } %>
+    </div>
+    <%= form.submit "Add card" %>
+  <% end %>
+</article>
