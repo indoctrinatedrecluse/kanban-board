@@ -1,6 +1,6 @@
 <main class="app-shell">
   <header class="board-header">
-    <div>
+    <div class="header-content">
       <p class="eyebrow">Kanban POC</p>
       <h1><%= @board.name %></h1>
       <p><%= @board.description %></p>
@@ -10,6 +10,20 @@
       <span><strong><%= @users.size %></strong> people</span>
     </div>
   </header>
+
+  <nav class="board-menu">
+    <div class="menu-left">
+      <span class="keyboard-hint">💡 <strong>Ctrl+C</strong> to copy a card | <strong>Ctrl+V</strong> to paste</span>
+    </div>
+    <div class="menu-right">
+      <button class="menu-btn" title="Clear board" onclick="if(confirm('Clear all cards? This cannot be undone.')) { location.href = '/boards/clear'; }">
+        🗑️ Clear
+      </button>
+      <button class="menu-btn" title="Board settings">
+        ⚙️ Settings
+      </button>
+    </div>
+  </nav>
 
   <section class="board" data-controller="kanban">
     <% @board.columns.each do |column| %>

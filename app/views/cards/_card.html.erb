@@ -3,7 +3,7 @@
   class="kanban-card priority-<%= card.priority.presence || "none" %>"
   draggable="true"
   data-card-id="<%= card.id %>"
-  data-action="dragstart->kanban#dragstart dragend->kanban#dragend"
+  data-action="dragstart->kanban#dragstart dragend->kanban#dragend click->kanban#selectCard"
 >
   <div class="card-topline">
     <span class="priority"><%= (card.priority.presence || "none").titleize %></span>

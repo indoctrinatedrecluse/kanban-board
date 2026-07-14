@@ -1,4 +1,4 @@
-<article class="kanban-column">
+<article class="kanban-column" data-kanban-target="column">
   <header class="column-header">
     <div>
       <h2><%= column.name %></h2>
@@ -11,9 +11,8 @@
 
   <div
     class="card-list"
-    data-kanban-target="column"
     data-column-id="<%= column.id %>"
-    data-action="dragover->kanban#dragover drop->kanban#drop"
+    data-action="dragover->kanban#dragover dragleave->kanban#dragleave drop->kanban#drop"
   >
     <% column.cards.each do |card| %>
       <%= render "cards/card", card: card, users: users %>
