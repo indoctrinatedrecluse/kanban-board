@@ -233,6 +233,11 @@ textarea {
   box-shadow: 0 12px 32px rgb(31 41 51 / 20%);
 }
 
+.kanban-card.is-reordering {
+  background: #fafbf9;
+  border-left-color: var(--info);
+}
+
 .kanban-card.is-selected {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -240,6 +245,10 @@ textarea {
 
 .kanban-card.is-copied {
   animation: pulse-copy 150ms ease-out;
+}
+
+.kanban-card.is-snapping {
+  animation: snap-settle 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes pulse-copy {
@@ -251,6 +260,20 @@ textarea {
   }
   100% {
     box-shadow: 0 0 0 0 rgba(47, 125, 109, 0);
+  }
+}
+
+@keyframes snap-settle {
+  0% {
+    transform: scale(1.02) translateY(-4px);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.01) translateY(-2px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
   }
 }
 

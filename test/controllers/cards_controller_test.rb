@@ -121,4 +121,50 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
     assert_match /kanban-card/, response.body
     assert_match /Test Card \(copy\)/, response.body
   end
+
+  # Reordering within column tests
+  test "reorders card within same column" do
+    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
+    card3 = @column1.cards.create!(title: "Card 3", priority: "low", position: 3)
+
+    # Move card3 to position 1
+    patch move_card_path(card3), params: { column_id: @column1.id, position: 1 }
+
+    card3.reload
+    @card.reload
+    card2.reload
+
+    assert_equal 1, card3.position
+    assert_equal 2, @card.position
+    assert_equal 3, card2.position
+  end
+
+  test "handles same position move (no change)" do
+    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
+
+    # Try to move card to its current position
+    patch move_card_path(@card), params: { column_id: @column1.id, position: 1 }
+
+    @card.reload
+    assert_equal 1, @card.position
+  end
+
+  test "reorders multiple cards when middle card moves" do
+    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
+    card3 = @column1.cards.create!(title: "Card 3", priority: "low", position: 3)
+    card4 = @column1.cards.create!(title: "Card 4", priority: "low", position: 4)
+
+    # Move card2 to position 4
+    patch move_card_path(card2), params: { column_id: @column1.id, position: 4 }
+
+    @card.reload
+    card2.reload
+    card3.reload
+    card4.reload
+
+    assert_equal 1, @card.position
+    assert_equal 2, card3.position
+    assert_equal 3, card4.position
+    assert_equal 4, card2.position
+  end
 end

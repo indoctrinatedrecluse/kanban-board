@@ -6,6 +6,8 @@ export default class extends Controller {
   connect() {
     this.draggedCard = null
     this.copiedCard = null
+    this.originalColumn = null
+    this.originalPosition = null
     this.setupKeyboardHandlers()
   }
 
@@ -68,6 +70,12 @@ export default class extends Controller {
 
   dragstart(event) {
     this.draggedCard = event.currentTarget
+    const cardList = this.draggedCard.closest(".card-list")
+    
+    // Track original position for same-column reordering detection
+    this.originalColumn = cardList
+    this.originalPosition = [...cardList.querySelectorAll(".kanban-card")].indexOf(this.draggedCard) + 1
+    
     event.dataTransfer.effectAllowed = "move"
     event.dataTransfer.setData("text/plain", this.draggedCard.dataset.cardId)
     this.draggedCard.classList.add("is-dragging")
@@ -76,9 +84,12 @@ export default class extends Controller {
   dragend() {
     if (this.draggedCard) {
       this.draggedCard.classList.remove("is-dragging")
+      this.draggedCard.classList.remove("is-reordering")
       this.columnTargets.forEach((col) => col.classList.remove("is-drag-over"))
     }
     this.draggedCard = null
+    this.originalColumn = null
+    this.originalPosition = null
   }
 
   dragover(event) {
@@ -89,6 +100,14 @@ export default class extends Controller {
     column.classList.add("is-drag-over")
 
     if (!this.draggedCard) return
+
+    // Add reordering class if moving within same column
+    const isSameColumn = this.originalColumn === cardList
+    if (isSameColumn) {
+      this.draggedCard.classList.add("is-reordering")
+    } else {
+      this.draggedCard.classList.remove("is-reordering")
+    }
 
     const afterElement = this.cardAfterPointer(cardList, event.clientY)
 
@@ -113,16 +132,27 @@ export default class extends Controller {
 
     const column = event.currentTarget
     const cardList = column.querySelector(".card-list")
-    const position = [...cardList.querySelectorAll(".kanban-card")].indexOf(this.draggedCard) + 1
+    const newPosition = [...cardList.querySelectorAll(".kanban-card")].indexOf(this.draggedCard) + 1
 
-    fetch(`/cards/${this.draggedCard.dataset.cardId}/move`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
-      },
-      body: JSON.stringify({ column_id: column.dataset.columnId, position: position })
-    })
+    // Check if position actually changed
+    const positionChanged = this.originalColumn !== cardList || this.originalPosition !== newPosition
+
+    // Add snap animation
+    this.draggedCard.classList.add("is-snapping")
+    setTimeout(() => {
+      this.draggedCard?.classList.remove("is-snapping")
+    }, 300)
+
+    if (positionChanged) {
+      fetch(`/cards/${this.draggedCard.dataset.cardId}/move`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+        },
+        body: JSON.stringify({ column_id: column.dataset.columnId, position: newPosition })
+      })
+    }
   }
 
   cardAfterPointer(cardList, pointerY) {
