@@ -29,7 +29,10 @@ Kanban Board is a Rails-first proof of concept for managing work across columns 
 - ✅ Scoped ordering for columns and cards.
 - ✅ Inline assignee changes with Turbo.
 - ✅ Card metadata: priority, labels, estimate, due date, and description.
-- ✅ Basic integration coverage for board rendering and card movement.
+- ✅ Refined drag-and-drop with visual feedback and smooth animations.
+- ✅ Card duplication with Ctrl+C / Ctrl+V keyboard shortcuts.
+- ✅ Top menu bar with board clear and settings buttons.
+- ✅ Comprehensive integration and controller test coverage (34 tests).
 
 ## Requirements
 
@@ -67,19 +70,19 @@ C:\Ruby33-x64\bin\bundle.bat install
 Create and migrate the database:
 
 ```powershell
-bin\rails db:migrate
+ruby bin/rails db:migrate
 ```
 
 Load demo data:
 
 ```powershell
-bin\rails db:seed
+ruby bin/rails db:seed
 ```
 
 PowerShell note: use `;` to run multiple commands in sequence:
 
 ```powershell
-bin\rails db:migrate; bin\rails db:seed
+ruby bin/rails db:migrate; ruby bin/rails db:seed
 ```
 
 ## Run The App
@@ -87,7 +90,7 @@ bin\rails db:migrate; bin\rails db:seed
 Start the Rails server:
 
 ```powershell
-bin\rails server
+ruby bin/rails server
 ```
 
 Then open:
@@ -99,19 +102,19 @@ http://127.0.0.1:3000/
 To run on a specific port:
 
 ```powershell
-bin\rails server -p 3000 -b 127.0.0.1
+ruby bin/rails server -p 3000 -b 127.0.0.1
 ```
 
 ## Run Tests
 
 ```powershell
-bin\rails test
+ruby bin/rails test
 ```
 
 Expected current result:
 
 ```text
-2 runs, 8 assertions, 0 failures, 0 errors, 0 skips
+34 runs, 89 assertions, 0 failures, 0 errors, 0 skips
 ```
 
 ## Data Model
@@ -152,10 +155,10 @@ erDiagram
 ## Useful Commands
 
 ```powershell
-bin\rails routes
-bin\rails console
-bin\rails db:reset
-bin\rails test
+ruby bin/rails routes
+ruby bin/rails console
+ruby bin/rails db:reset
+ruby bin/rails test
 ```
 
 ## Next Good Iterations
