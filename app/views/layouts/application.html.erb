@@ -25,5 +25,10 @@
 
   <body>
     <%= yield %>
+    <div class="modal-overlay" data-controller="modal" data-modal-target="backdrop" data-action="click->modal#closeOnBackdropClick">
+      <div class="modal-box">
+        <div class="modal-content" data-modal-target="content"></div>
+      </div>
+    </div>
   </body>
 </html>

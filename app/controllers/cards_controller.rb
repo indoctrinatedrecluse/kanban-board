@@ -1,5 +1,10 @@
 class CardsController < ApplicationController
-  before_action :set_card, only: %i[update move duplicate]
+  before_action :set_card, only: %i[show update move duplicate]
+
+  def show
+    @users = User.order(:name)
+    render partial: "cards/modal", locals: { card: @card, users: @users }
+  end
 
   def create
     @column = Column.find(params[:column_id])

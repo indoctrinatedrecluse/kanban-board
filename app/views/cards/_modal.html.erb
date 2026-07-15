@@ -1,0 +1,58 @@
+<div class="modal-header">
+  <h2><%= card.title %></h2>
+  <button class="modal-close" aria-label="Close modal" data-action="modal#close">×</button>
+</div>
+
+<form class="modal-body" data-remote="true" action="<%= card_path(card) %>" method="post">
+  <input type="hidden" name="_method" value="patch">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+
+  <div class="modal-field">
+    <label for="card_description">Description</label>
+    <textarea id="card_description" name="card[description]" rows="4" class="modal-textarea"><%= card.description %></textarea>
+  </div>
+
+  <div class="modal-row">
+    <div class="modal-field">
+      <label for="card_priority">Priority</label>
+      <select id="card_priority" name="card[priority]">
+        <option value="">— None —</option>
+        <% Card::PRIORITIES.each do |priority| %>
+          <option value="<%= priority %>" <%= card.priority == priority ? 'selected' : '' %>><%= priority.titleize %></option>
+        <% end %>
+      </select>
+    </div>
+
+    <div class="modal-field">
+      <label for="card_estimate">Estimate (pts)</label>
+      <input type="number" id="card_estimate" name="card[estimate]" value="<%= card.estimate %>" min="1" placeholder="—">
+    </div>
+  </div>
+
+  <div class="modal-row">
+    <div class="modal-field">
+      <label for="card_due_on">Due Date</label>
+      <input type="date" id="card_due_on" name="card[due_on]" value="<%= card.due_on&.iso8601 %>">
+    </div>
+
+    <div class="modal-field">
+      <label for="card_assignee_id">Assignee</label>
+      <select id="card_assignee_id" name="card[assignee_id]">
+        <option value="">— Unassigned —</option>
+        <% users.each do |user| %>
+          <option value="<%= user.id %>" <%= card.assignee_id == user.id ? 'selected' : '' %>><%= user.name %></option>
+        <% end %>
+      </select>
+    </div>
+  </div>
+
+  <div class="modal-field">
+    <label for="card_labels">Labels (comma-separated)</label>
+    <input type="text" id="card_labels" name="card[labels]" value="<%= card.labels %>" placeholder="e.g. bug, feature, urgent">
+  </div>
+
+  <div class="modal-actions">
+    <button type="submit" class="modal-save">Save Changes</button>
+    <button type="button" class="modal-cancel" data-action="modal#close">Cancel</button>
+  </div>
+</form>

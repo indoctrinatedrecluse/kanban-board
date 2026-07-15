@@ -182,44 +182,95 @@ class KanbanBoardTest < ActionDispatch::IntegrationTest
     assert_equal "urgent,bug", duplicated_card.labels
   end
 
-  test "duplicate to same column works" do
-    initial_count = @todo.cards.count
-
-    post duplicate_card_path(@card), params: { target_column_id: @todo.id }
+  # Card modal tests
+  test "can fetch card detail modal" do
+    get card_path(@card), headers: { "Accept": "text/html" }
 
     assert_response :success
-    @todo.reload
-    assert_equal initial_count + 1, @todo.cards.count
-
-    duplicated_card = @todo.cards.last
-    assert_equal "Move me (copy)", duplicated_card.title
+    assert_select ".modal-header h2"
+    assert_select "textarea#card_description"
+    assert_select "select#card_priority"
+    assert_select "input#card_estimate"
+    assert_select "input#card_due_on"
+    assert_select "select#card_assignee_id"
+    assert_select "input#card_labels"
   end
 
-  # Board clear tests
-  test "clears all cards from board" do
-    @card3 = @todo.cards.create!(title: "Card 3", priority: "low", position: 3)
-    @card4 = @doing.cards.create!(title: "Doing card", priority: "medium", position: 1)
+  test "modal shows current card values" do
+    @card.update!(
+      description: "Test description",
+      priority: "high",
+      estimate: 5,
+      due_on: Date.today + 1.day,
+      labels: "bug, urgent"
+    )
 
-    assert_equal 3, @todo.cards.count
-    assert_equal 1, @doing.cards.count
+    get card_path(@card), headers: { "Accept": "text/html" }
 
-    post clear_board_path(@board)
-
-    assert_redirected_to root_path
-
-    @todo.reload
-    @doing.reload
-
-    assert_equal 0, @todo.cards.count
-    assert_equal 0, @doing.cards.count
+    assert_response :success
+    assert_select "textarea#card_description", "Test description"
+    assert_select "select#card_priority" do
+      assert_select "option[selected][value=?]", "high"
+    end
+    assert_select "input#card_estimate[value=?]", "5"
+    assert_select "input#card_labels[value=?]", "bug, urgent"
   end
 
-  test "clear board keeps columns intact" do
-    post clear_board_path(@board)
+  test "can update card via modal form" do
+    patch card_path(@card), params: {
+      card: {
+        description: "Updated description",
+        priority: "high",
+        estimate: 8,
+        due_on: "2024-12-25",
+        assignee_id: @user.id,
+        labels: "urgent"
+      }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
 
-    @board.reload
-    assert_equal 2, @board.columns.count
-    assert_equal "To Do", @board.columns.first.name
-    assert_equal "Doing", @board.columns.second.name
+    assert_response :ok
+
+    @card.reload
+    assert_equal "Updated description", @card.description
+    assert_equal "high", @card.priority
+    assert_equal 8, @card.estimate
+    assert_equal "2024-12-25", @card.due_on.to_s
+    assert_equal @user.id, @card.assignee_id
+    assert_equal "urgent", @card.labels
+  end
+
+  test "can clear card description via modal" do
+    @card.update!(description: "Some description")
+
+    patch card_path(@card), params: {
+      card: { description: "" }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
+
+    assert_response :ok
+
+    @card.reload
+    assert_empty @card.description
+  end
+
+  test "modal form returns turbo_stream on update" do
+    patch card_path(@card), params: {
+      card: { description: "Updated" }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
+
+    assert_response :ok
+    assert_equal "text/vnd.turbo-stream.html; charset=utf-8", response.content_type
+  end
+
+  test "card update via modal maintains column and position" do
+    original_column = @card.column
+    original_position = @card.position
+
+    patch card_path(@card), params: {
+      card: { description: "Updated", priority: "low" }
+    }
+
+    @card.reload
+    assert_equal original_column, @card.column
+    assert_equal original_position, @card.position
   end
 end

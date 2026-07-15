@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   resources :columns, only: [] do
     resources :cards, only: :create
   end
-  resources :cards, only: :update do
+  resources :cards, only: [:show, :update] do
     patch :move, on: :member
     post :duplicate, on: :member
   end
