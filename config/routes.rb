@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   resource :board, only: :show do
     post :clear, on: :member
   end
-  resources :columns, only: [] do
+  resources :columns, only: [:show, :update] do
     resources :cards, only: :create
   end
   resources :cards, only: [:show, :update] do

@@ -5,11 +5,14 @@
   data-card-id="<%= card.id %>"
   data-action="dragstart->kanban#dragstart dragend->kanban#dragend click->kanban#selectCard dblclick->modal#open"
 >
-  <div class="card-topline">
-    <span class="priority"><%= (card.priority.presence || "none").titleize %></span>
-    <% if card.estimate.present? %>
-      <span class="estimate"><%= card.estimate %> pt</span>
-    <% end %>
+  <div class="card-header-edit">
+    <div class="card-topline">
+      <span class="priority"><%= (card.priority.presence || "none").titleize %></span>
+      <% if card.estimate.present? %>
+        <span class="estimate"><%= card.estimate %> pt</span>
+      <% end %>
+    </div>
+    <button class="card-edit-btn" aria-label="Edit card" data-action="modal#open" data-card-id="<%= card.id %>" title="Edit card">✎</button>
   </div>
 
   <h3><%= card.title %></h3>

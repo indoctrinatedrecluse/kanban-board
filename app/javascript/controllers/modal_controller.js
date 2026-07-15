@@ -4,18 +4,31 @@ export default class extends Controller {
   static targets = ["backdrop", "content"]
 
   connect() {
-    document.addEventListener("keydown", (e) => this.handleEscape(e))
+    this.boundHandleEscape = this.handleEscape.bind(this)
+    document.addEventListener("keydown", this.boundHandleEscape)
   }
 
   disconnect() {
-    document.removeEventListener("keydown", (e) => this.handleEscape(e))
+    document.removeEventListener("keydown", this.boundHandleEscape)
   }
 
   open(event) {
     event.preventDefault()
-    const cardId = event.currentTarget.dataset.cardId
+    event.stopPropagation()
     
-    fetch(`/cards/${cardId}`, { 
+    const cardId = event.currentTarget.dataset.cardId
+    const columnId = event.currentTarget.dataset.columnId
+    
+    let url
+    if (cardId) {
+      url = `/cards/${cardId}`
+    } else if (columnId) {
+      url = `/columns/${columnId}`
+    } else {
+      return
+    }
+    
+    fetch(url, { 
       headers: { "Accept": "text/html" } 
     })
       .then((response) => response.text())
@@ -26,9 +39,7 @@ export default class extends Controller {
         
         // Setup form submission handler
         const form = this.contentTarget.querySelector("form")
-        if (form) {
-          form.addEventListener("submit", (e) => this.handleFormSubmit(e))
-        }
+        form?.addEventListener("submit", (e) => this.handleFormSubmit(e))
       })
   }
 
@@ -46,9 +57,9 @@ export default class extends Controller {
     })
       .then((response) => response.text())
       .then((html) => {
-        const parser = new DOMParser()
-        const doc = parser.parseFromString(html, "text/html")
-        Turbo.parseAndDispatchAction(doc)
+        if (html.trim().startsWith("<turbo-stream")) {
+          Turbo.renderStreamMessage(html)
+        }
         this.close()
       })
   }

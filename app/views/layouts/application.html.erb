@@ -23,9 +23,9 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-controller="modal">
     <%= yield %>
-    <div class="modal-overlay" data-controller="modal" data-modal-target="backdrop" data-action="click->modal#closeOnBackdropClick">
+    <div class="modal-overlay" data-modal-target="backdrop" data-action="click->modal#closeOnBackdropClick">
       <div class="modal-box">
         <div class="modal-content" data-modal-target="content"></div>
       </div>

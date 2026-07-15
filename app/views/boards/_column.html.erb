@@ -1,12 +1,15 @@
-<article class="kanban-column" data-kanban-target="column" data-column-id="<%= column.id %>" data-action="dragover->kanban#dragover dragleave->kanban#dragleave drop->kanban#drop">
+<article id="<%= dom_id(column) %>" class="kanban-column" data-kanban-target="column" data-column-id="<%= column.id %>" data-action="dragover->kanban#dragover dragleave->kanban#dragleave drop->kanban#drop">
   <header class="column-header">
-    <div>
+    <div class="column-title">
       <h2><%= column.name %></h2>
       <span><%= pluralize(column.cards.size, "card") %></span>
     </div>
-    <% if column.wip_limit.present? %>
-      <span class="wip-limit">WIP <%= column.wip_limit %></span>
-    <% end %>
+    <div class="column-meta">
+      <% if column.wip_limit.present? %>
+        <span class="wip-limit">WIP <%= column.wip_limit %></span>
+      <% end %>
+      <button class="column-edit-btn" aria-label="Edit column" data-action="modal#open" data-column-id="<%= column.id %>" title="Edit column">✎</button>
+    </div>
   </header>
 
   <div

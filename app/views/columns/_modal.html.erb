@@ -1,0 +1,59 @@
+<div class="modal-header">
+  <h2><%= column.name %></h2>
+  <button class="modal-close" aria-label="Close modal" data-action="modal#close">×</button>
+</div>
+
+<form class="modal-body" data-remote="true" action="<%= column_path(column) %>" method="post">
+  <input type="hidden" name="_method" value="patch">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+
+  <div class="modal-field">
+    <label for="column_name">Column Name</label>
+    <input type="text" id="column_name" name="column[name]" value="<%= column.name %>" required>
+  </div>
+
+  <div class="modal-field">
+    <label for="column_wip_limit">WIP Limit (optional)</label>
+    <input type="number" id="column_wip_limit" name="column[wip_limit]" value="<%= column.wip_limit %>" min="1" placeholder="No limit">
+  </div>
+
+  <div class="modal-section">
+    <h3>Column Stats</h3>
+    <p class="stat-item">
+      <strong>Cards in column:</strong> <%= column.cards.count %>
+    </p>
+    <p class="stat-item">
+      <strong>Total points:</strong> <%= column.cards.sum { |card| card.estimate.to_i } %>
+    </p>
+    <% if column.wip_limit.present? %>
+      <p class="stat-item <%= 'wip-exceeded' if column.cards.count > column.wip_limit %>">
+        <strong>WIP Usage:</strong> <%= column.cards.count %>/<%= column.wip_limit %>
+        <% if column.cards.count > column.wip_limit %>
+          <span class="warning-badge">⚠️ Over limit</span>
+        <% end %>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="modal-section">
+    <h3>Assignees</h3>
+    <% assigned_cards = column.cards.includes(:assignee).select(&:assignee) %>
+    <% if assigned_cards.any? %>
+      <% assigned_cards.group_by(&:assignee).sort_by { |assignee, _cards| assignee.name }.each do |assignee, cards| %>
+        <p class="stat-item">
+          <strong><%= assignee.name %></strong>
+          <span><%= pluralize(cards.size, "card") %></span>
+        </p>
+      <% end %>
+    <% else %>
+      <p class="stat-item">
+        <strong>No assigned cards</strong>
+      </p>
+    <% end %>
+  </div>
+
+  <div class="modal-actions">
+    <button type="submit" class="modal-save">Save Changes</button>
+    <button type="button" class="modal-cancel" data-action="modal#close">Cancel</button>
+  </div>
+</form>
