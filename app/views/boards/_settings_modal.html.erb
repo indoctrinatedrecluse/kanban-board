@@ -1,0 +1,37 @@
+<div class="modal-header">
+  <h2>Board Settings</h2>
+  <button class="modal-close" aria-label="Close modal" data-action="modal#close">&times;</button>
+</div>
+
+<form class="modal-body" data-remote="true" action="<%= board_path %>" method="post">
+  <input type="hidden" name="_method" value="patch">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+
+  <div class="modal-field">
+    <label for="board_name_input">Board Name</label>
+    <input type="text" id="board_name_input" name="board[name]" value="<%= board.name %>" required>
+  </div>
+
+  <div class="modal-field">
+    <label for="board_description_input">Description</label>
+    <textarea id="board_description_input" name="board[description]" rows="4" class="modal-textarea"><%= board.description %></textarea>
+  </div>
+
+  <div class="modal-section">
+    <h3>Board Overview</h3>
+    <p class="stat-item">
+      <strong>Columns:</strong> <%= board.columns.size %>
+    </p>
+    <p class="stat-item">
+      <strong>Cards:</strong> <%= board.columns.sum { |column| column.cards.size } %>
+    </p>
+    <p class="stat-item">
+      <strong>WIP-limited columns:</strong> <%= board.columns.count { |column| column.wip_limit.present? } %>
+    </p>
+  </div>
+
+  <div class="modal-actions">
+    <button type="submit" class="modal-save">Save Settings</button>
+    <button type="button" class="modal-cancel" data-action="modal#close">Cancel</button>
+  </div>
+</form>

@@ -2,8 +2,8 @@
   <header class="board-header">
     <div class="header-content">
       <p class="eyebrow">Kanban POC</p>
-      <h1><%= @board.name %></h1>
-      <p><%= @board.description %></p>
+      <h1 id="board_name"><%= @board.name %></h1>
+      <p id="board_description"><%= @board.description %></p>
     </div>
     <div class="board-stats">
       <span><strong><%= @board.columns.sum { |column| column.cards.size } %></strong> cards</span>
@@ -13,14 +13,14 @@
 
   <nav class="board-menu">
     <div class="menu-left">
-      <span class="keyboard-hint">💡 <strong>Ctrl+C</strong> to copy a card | <strong>Ctrl+V</strong> to paste</span>
+      <span class="keyboard-hint"><strong>Ctrl+C</strong> to copy a card | <strong>Ctrl+V</strong> to paste</span>
     </div>
     <div class="menu-right">
       <button class="menu-btn" title="Clear board" onclick="if(confirm('Clear all cards? This cannot be undone.')) { location.href = '/boards/clear'; }">
-        🗑️ Clear
+        Clear
       </button>
-      <button class="menu-btn" title="Board settings">
-        ⚙️ Settings
+      <button class="menu-btn" title="Board settings" data-action="modal#open" data-modal-url="<%= edit_board_path %>">
+        Settings
       </button>
     </div>
   </nav>

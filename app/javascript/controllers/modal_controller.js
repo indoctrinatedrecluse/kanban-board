@@ -18,9 +18,12 @@ export default class extends Controller {
     
     const cardId = event.currentTarget.dataset.cardId
     const columnId = event.currentTarget.dataset.columnId
+    const modalUrl = event.currentTarget.dataset.modalUrl
     
     let url
-    if (cardId) {
+    if (modalUrl) {
+      url = modalUrl
+    } else if (cardId) {
       url = `/cards/${cardId}`
     } else if (columnId) {
       url = `/columns/${columnId}`
@@ -34,7 +37,7 @@ export default class extends Controller {
       .then((response) => response.text())
       .then((html) => {
         this.contentTarget.innerHTML = html
-        this.element.classList.add("is-open")
+        this.backdropTarget.classList.add("is-open")
         document.body.style.overflow = "hidden"
         
         // Setup form submission handler
@@ -65,7 +68,7 @@ export default class extends Controller {
   }
 
   close() {
-    this.element.classList.remove("is-open")
+    this.backdropTarget.classList.remove("is-open")
     document.body.style.overflow = ""
     this.contentTarget.innerHTML = ""
   }
@@ -77,7 +80,7 @@ export default class extends Controller {
   }
 
   handleEscape(event) {
-    if (event.key === "Escape" && this.element.classList.contains("is-open")) {
+    if (event.key === "Escape" && this.backdropTarget.classList.contains("is-open")) {
       this.close()
     }
   }

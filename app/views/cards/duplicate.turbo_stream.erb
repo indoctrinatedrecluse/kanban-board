@@ -1,0 +1,1 @@
+<%= turbo_stream.append @new_card.column, partial: "cards/card", locals: { card: @new_card, users: User.order(:name) } %>

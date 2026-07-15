@@ -4,8 +4,8 @@ require "rails/test_help"
 
 module ActiveSupport
   class TestCase
-    # Run tests in parallel with specified workers
-    parallelize(workers: :number_of_processors, with: :threads)
+    # SQLite-backed tests are more reliable in a single process on Windows.
+    parallelize(workers: ENV.fetch("PARALLEL_WORKERS", 1).to_i, with: :threads)
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all

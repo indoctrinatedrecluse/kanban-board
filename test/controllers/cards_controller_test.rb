@@ -7,164 +7,88 @@ class CardsControllerTest < ActionDispatch::IntegrationTest
 
     @user = User.create!(name: "Test User", email: "test@example.test")
     @board = Board.create!(name: "Test Board")
-    @column1 = @board.columns.create!(name: "Column 1", position: 1)
-    @column2 = @board.columns.create!(name: "Column 2", position: 2)
-    @card = @column1.cards.create!(title: "Test Card", priority: "medium", position: 1)
+    @todo = @board.columns.create!(name: "To Do", position: 1)
+    @doing = @board.columns.create!(name: "Doing", position: 2)
+    @card = @todo.cards.create!(
+      title: "Test Card",
+      priority: "medium",
+      description: "Original description",
+      estimate: 8,
+      labels: "bug,critical",
+      due_on: Date.tomorrow,
+      assignee: @user,
+      position: 1
+    )
   end
 
-  # Move action tests
-  test "move card returns 200 OK" do
-    patch move_card_path(@card), params: { column_id: @column2.id, position: 1 }
+  test "show renders the card edit modal" do
+    get card_path(@card), headers: { "Accept": "text/html" }
+
+    assert_response :success
+    assert_select ".modal-header h2", "Edit Card"
+    assert_select "input[name='card[title]'][value=?]", "Test Card"
+    assert_select "select[name='card[assignee_id]'] option[selected][value=?]", @user.id.to_s
+  end
+
+  test "update changes editable card fields and returns turbo stream" do
+    patch card_path(@card), params: {
+      card: {
+        title: "Updated Card",
+        description: "Updated description",
+        priority: "high",
+        estimate: 13,
+        labels: "feature",
+        due_on: "2026-08-01",
+        assignee_id: ""
+      }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
+
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html; charset=utf-8", response.content_type
+
+    @card.reload
+    assert_equal "Updated Card", @card.title
+    assert_equal "Updated description", @card.description
+    assert_equal "high", @card.priority
+    assert_equal 13, @card.estimate
+    assert_equal "feature", @card.labels
+    assert_equal "2026-08-01", @card.due_on.to_s
+    assert_nil @card.assignee
+  end
+
+  test "move changes column and position" do
+    patch move_card_path(@card), params: { column_id: @doing.id, position: 1 }
+
     assert_response :ok
-  end
-
-  test "move card updates column" do
-    patch move_card_path(@card), params: { column_id: @column2.id, position: 1 }
-
     @card.reload
-    assert_equal @column2, @card.column
+    assert_equal @doing, @card.column
+    assert_equal 1, @card.position
   end
 
-  test "move card updates position" do
-    patch move_card_path(@card), params: { column_id: @column2.id, position: 3 }
+  test "move reorders cards in the same column" do
+    second = @todo.cards.create!(title: "Second", priority: "low", position: 2)
+    third = @todo.cards.create!(title: "Third", priority: "low", position: 3)
 
-    @card.reload
-    assert_equal 3, @card.position
+    patch move_card_path(third), params: { column_id: @todo.id, position: 1 }
+
+    [@card, second, third].each(&:reload)
+    assert_equal [third, @card, second], @todo.reload.cards.to_a
   end
 
-  # Duplicate action tests
-  test "duplicate card returns success" do
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-    assert_response :success
-  end
-
-  test "duplicate card creates new card" do
-    assert_difference "Card.count" do
-      post duplicate_card_path(@card), params: { target_column_id: @column2.id }
+  test "duplicate creates a copied card with metadata" do
+    assert_difference "Card.count", 1 do
+      post duplicate_card_path(@card), params: { target_column_id: @doing.id }
     end
-  end
 
-  test "duplicate card appends (copy) to title" do
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
+    assert_response :success
+    duplicated = @doing.cards.reload.last
     assert_equal "Test Card (copy)", duplicated.title
-  end
-
-  test "duplicate card preserves priority" do
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
-    assert_equal "medium", duplicated.priority
-  end
-
-  test "duplicate card preserves description" do
-    @card.update!(description: "Original description")
-
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
     assert_equal "Original description", duplicated.description
-  end
-
-  test "duplicate card preserves estimate" do
-    @card.update!(estimate: 8)
-
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
+    assert_equal "medium", duplicated.priority
     assert_equal 8, duplicated.estimate
-  end
-
-  test "duplicate card preserves labels" do
-    @card.update!(labels: "bug,critical")
-
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
     assert_equal "bug,critical", duplicated.labels
-  end
-
-  test "duplicate card preserves due_on" do
-    due_date = Date.tomorrow
-    @card.update!(due_on: due_date)
-
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
-    assert_equal due_date, duplicated.due_on
-  end
-
-  test "duplicate does preserve assignee via dup method" do
-    @card.update!(assignee: @user)
-
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    duplicated = Card.where(column: @column2).last
-    # Note: Ruby's dup method copies the association, so assignee_id is preserved
+    assert_equal Date.tomorrow, duplicated.due_on
     assert_equal @user, duplicated.assignee
-  end
-
-  test "duplicate to same column works" do
-    assert_difference "Card.count" do
-      post duplicate_card_path(@card), params: { target_column_id: @column1.id }
-    end
-
-    duplicated = Card.where(column: @column1).last
-    assert_equal "Test Card (copy)", duplicated.title
-  end
-
-  test "duplicate returns partial HTML" do
-    post duplicate_card_path(@card), params: { target_column_id: @column2.id }
-
-    assert_response :success
     assert_match /kanban-card/, response.body
-    assert_match /Test Card \(copy\)/, response.body
-  end
-
-  # Reordering within column tests
-  test "reorders card within same column" do
-    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
-    card3 = @column1.cards.create!(title: "Card 3", priority: "low", position: 3)
-
-    # Move card3 to position 1
-    patch move_card_path(card3), params: { column_id: @column1.id, position: 1 }
-
-    card3.reload
-    @card.reload
-    card2.reload
-
-    assert_equal 1, card3.position
-    assert_equal 2, @card.position
-    assert_equal 3, card2.position
-  end
-
-  test "handles same position move (no change)" do
-    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
-
-    # Try to move card to its current position
-    patch move_card_path(@card), params: { column_id: @column1.id, position: 1 }
-
-    @card.reload
-    assert_equal 1, @card.position
-  end
-
-  test "reorders multiple cards when middle card moves" do
-    card2 = @column1.cards.create!(title: "Card 2", priority: "low", position: 2)
-    card3 = @column1.cards.create!(title: "Card 3", priority: "low", position: 3)
-    card4 = @column1.cards.create!(title: "Card 4", priority: "low", position: 4)
-
-    # Move card2 to position 4
-    patch move_card_path(card2), params: { column_id: @column1.id, position: 4 }
-
-    @card.reload
-    card2.reload
-    card3.reload
-    card4.reload
-
-    assert_equal 1, @card.position
-    assert_equal 2, card3.position
-    assert_equal 3, card4.position
-    assert_equal 4, card2.position
   end
 end

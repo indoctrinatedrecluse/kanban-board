@@ -42,7 +42,7 @@ export default class extends Controller {
     if (!this.copiedCard) return
 
     event.preventDefault()
-    const targetColumn = document.querySelector(".card-list.is-paste-target") || 
+    const targetColumn = document.querySelector(".card-list.is-paste-target") ||
                          document.querySelector(".kanban-column:hover .card-list")
 
     if (!targetColumn) return
@@ -51,14 +51,11 @@ export default class extends Controller {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Accept": "text/vnd.turbo-stream.html",
         "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
       },
       body: JSON.stringify({ target_column_id: targetColumn.dataset.columnId })
     })
-      .then((response) => response.text())
-      .then((html) => {
-        targetColumn.insertAdjacentHTML("beforeend", html)
-      })
   }
 
   selectCard(event) {
@@ -71,11 +68,11 @@ export default class extends Controller {
   dragstart(event) {
     this.draggedCard = event.currentTarget
     const cardList = this.draggedCard.closest(".card-list")
-    
+
     // Track original position for same-column reordering detection
     this.originalColumn = cardList
     this.originalPosition = [...cardList.querySelectorAll(".kanban-card")].indexOf(this.draggedCard) + 1
-    
+
     event.dataTransfer.effectAllowed = "move"
     event.dataTransfer.setData("text/plain", this.draggedCard.dataset.cardId)
     this.draggedCard.classList.add("is-dragging")

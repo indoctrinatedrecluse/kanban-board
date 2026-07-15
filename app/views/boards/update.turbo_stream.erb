@@ -1,0 +1,7 @@
+<%= turbo_stream.replace "board_name" do %>
+  <h1 id="board_name"><%= @board.name %></h1>
+<% end %>
+
+<%= turbo_stream.replace "board_description" do %>
+  <p id="board_description"><%= @board.description %></p>
+<% end %>

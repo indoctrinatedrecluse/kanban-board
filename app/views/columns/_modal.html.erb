@@ -1,6 +1,6 @@
 <div class="modal-header">
-  <h2><%= column.name %></h2>
-  <button class="modal-close" aria-label="Close modal" data-action="modal#close">×</button>
+  <h2>Edit Column</h2>
+  <button class="modal-close" aria-label="Close modal" data-action="modal#close">&times;</button>
 </div>
 
 <form class="modal-body" data-remote="true" action="<%= column_path(column) %>" method="post">
@@ -26,10 +26,10 @@
       <strong>Total points:</strong> <%= column.cards.sum { |card| card.estimate.to_i } %>
     </p>
     <% if column.wip_limit.present? %>
-      <p class="stat-item <%= 'wip-exceeded' if column.cards.count > column.wip_limit %>">
+      <p class="stat-item <%= "wip-exceeded" if column.cards.count > column.wip_limit %>">
         <strong>WIP Usage:</strong> <%= column.cards.count %>/<%= column.wip_limit %>
         <% if column.cards.count > column.wip_limit %>
-          <span class="warning-badge">⚠️ Over limit</span>
+          <span class="warning-badge">Over limit</span>
         <% end %>
       </p>
     <% end %>
@@ -53,7 +53,7 @@
   </div>
 
   <div class="modal-actions">
-    <button type="submit" class="modal-save">Save Changes</button>
+    <button type="submit" class="modal-save">Save Column</button>
     <button type="button" class="modal-cancel" data-action="modal#close">Cancel</button>
   </div>
 </form>

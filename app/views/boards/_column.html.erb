@@ -8,7 +8,7 @@
       <% if column.wip_limit.present? %>
         <span class="wip-limit">WIP <%= column.wip_limit %></span>
       <% end %>
-      <button class="column-edit-btn" aria-label="Edit column" data-action="modal#open" data-column-id="<%= column.id %>" title="Edit column">✎</button>
+      <button type="button" class="column-edit-btn" aria-label="Edit column" data-action="modal#open" data-column-id="<%= column.id %>" title="Edit column">Edit</button>
     </div>
   </header>
 

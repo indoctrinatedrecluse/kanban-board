@@ -1,5 +1,5 @@
 class CardsController < ApplicationController
-  before_action :set_card, only: %i[show update move duplicate]
+  before_action :set_card, only: %i[show update move duplicate destroy]
 
   def show
     @users = User.order(:name)
@@ -34,13 +34,25 @@ class CardsController < ApplicationController
 
   def duplicate
     target_column = Column.find(params.require(:target_column_id))
-    new_card = @card.dup
-    new_card.column = target_column
-    new_card.title = "#{@card.title} (copy)"
-    new_card.save!
-    new_card.insert_at(target_column.cards.count)
+    @new_card = @card.dup
+    @new_card.column = target_column
+    @new_card.title = "#{@card.title} (copy)"
+    @new_card.save!
+    @new_card.insert_at(target_column.cards.count)
 
-    render partial: "cards/card", locals: { card: new_card, users: User.order(:name) }
+    respond_to do |format|
+      format.turbo_stream
+      format.html { render partial: "cards/card", locals: { card: @new_card, users: User.order(:name) } }
+    end
+  end
+
+  def destroy
+    @card.destroy
+
+    respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@card) }
+      format.html { redirect_to root_path, notice: "Card was successfully destroyed." }
+    end
   end
 
   private

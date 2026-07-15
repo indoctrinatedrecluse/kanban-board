@@ -1,6 +1,6 @@
 <div class="modal-header">
-  <h2><%= card.title %></h2>
-  <button class="modal-close" aria-label="Close modal" data-action="modal#close">×</button>
+  <h2>Edit Card</h2>
+  <button class="modal-close" aria-label="Close modal" data-action="modal#close">&times;</button>
 </div>
 
 <form class="modal-body" data-remote="true" action="<%= card_path(card) %>" method="post">
@@ -21,16 +21,16 @@
     <div class="modal-field">
       <label for="card_priority">Priority</label>
       <select id="card_priority" name="card[priority]">
-        <option value="">— None —</option>
+        <option value="">None</option>
         <% Card::PRIORITIES.each do |priority| %>
-          <option value="<%= priority %>" <%= card.priority == priority ? 'selected' : '' %>><%= priority.titleize %></option>
+          <option value="<%= priority %>" <%= card.priority == priority ? "selected" : "" %>><%= priority.titleize %></option>
         <% end %>
       </select>
     </div>
 
     <div class="modal-field">
       <label for="card_estimate">Estimate (pts)</label>
-      <input type="number" id="card_estimate" name="card[estimate]" value="<%= card.estimate %>" min="1" placeholder="—">
+      <input type="number" id="card_estimate" name="card[estimate]" value="<%= card.estimate %>" min="1" placeholder="None">
     </div>
   </div>
 
@@ -43,9 +43,9 @@
     <div class="modal-field">
       <label for="card_assignee_id">Assignee</label>
       <select id="card_assignee_id" name="card[assignee_id]">
-        <option value="">— Unassigned —</option>
+        <option value="">Unassigned</option>
         <% users.each do |user| %>
-          <option value="<%= user.id %>" <%= card.assignee_id == user.id ? 'selected' : '' %>><%= user.name %></option>
+          <option value="<%= user.id %>" <%= card.assignee_id == user.id ? "selected" : "" %>><%= user.name %></option>
         <% end %>
       </select>
     </div>
@@ -57,7 +57,12 @@
   </div>
 
   <div class="modal-actions">
-    <button type="submit" class="modal-save">Save Changes</button>
+    <button type="submit" class="modal-save">Save Card</button>
+    <a href="<%= card_path(card) %>" class="modal-delete" data-turbo-method="delete" data-confirm="Are you sure?">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+        <path fill-rule="evenodd" d="M16.5 4.478v.227a48.816 48.816 0 013.878.512.75.75 0 11-.256 1.478l-.209-.035-1.005 13.006a.75.75 0 01-.749.65H5.25a.75.75 0 01-.749-.65L3.5 6.699l-.209.035a.75.75 0 01-.256-1.478A48.567 48.567 0 017.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.9h1.368c1.603 0 2.816 1.336 2.816 2.9zM9.75 4.478v.227a.75.75 0 11-1.5 0v-.227a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5v.227a.75.75 0 11-1.5 0v-.227a.25.25 0 00-.25-.25h-1.5a.25.25 0 00-.25.25z" clip-rule="evenodd" />
+      </svg>
+    </a>
     <button type="button" class="modal-cancel" data-action="modal#close">Cancel</button>
   </div>
 </form>

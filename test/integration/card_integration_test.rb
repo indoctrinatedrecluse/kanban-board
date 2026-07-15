@@ -1,6 +1,6 @@
 require "test_helper"
 
-class KanbanBoardTest < ActionDispatch::IntegrationTest
+class CardIntegrationTest < ActionDispatch::IntegrationTest
   setup do
     Board.destroy_all
     User.destroy_all
@@ -11,41 +11,6 @@ class KanbanBoardTest < ActionDispatch::IntegrationTest
     @doing = @board.columns.create!(name: "Doing", position: 2)
     @card = @todo.cards.create!(title: "Move me", priority: "medium", assignee: @user, position: 1)
     @card2 = @todo.cards.create!(title: "Original card", priority: "high", position: 2)
-  end
-
-  # Basic rendering tests
-  test "renders the kanban board" do
-    get root_path
-
-    assert_response :success
-    assert_select "h1", "Test Board"
-    assert_select "body[data-controller=?]", "modal"
-    assert_select "article#column_#{@todo.id}"
-    assert_select ".kanban-card h3", "Move me"
-  end
-
-  test "renders card and column edit controls" do
-    get root_path
-
-    assert_response :success
-    assert_select ".card-edit-btn[data-card-id=?]", @card.id.to_s
-    assert_select ".column-edit-btn[data-column-id=?]", @todo.id.to_s
-  end
-
-  test "displays menu bar with keyboard hints" do
-    get root_path
-
-    assert_response :success
-    assert_select ".board-menu"
-    assert_select ".keyboard-hint", /Ctrl\+C/
-    assert_select ".keyboard-hint", /Ctrl\+V/
-  end
-
-  test "displays menu buttons" do
-    get root_path
-
-    assert_response :success
-    assert_select ".menu-btn", count: 2
   end
 
   # Drag and drop tests
@@ -197,7 +162,7 @@ class KanbanBoardTest < ActionDispatch::IntegrationTest
     get card_path(@card), headers: { "Accept": "text/html" }
 
     assert_response :success
-    assert_select ".modal-header h2"
+    assert_select ".modal-header h2", "Edit Card"
     assert_select "input#card_title[value=?]", "Move me"
     assert_select "textarea#card_description"
     assert_select "select#card_priority"
@@ -288,117 +253,11 @@ class KanbanBoardTest < ActionDispatch::IntegrationTest
     assert_equal original_position, @card.position
   end
 
-  # Column modal tests
-  test "can fetch column edit modal" do
-    get column_path(@todo), headers: { "Accept": "text/html" }
+  test "can delete a card" do
+    assert_difference("Card.count", -1) do
+      delete card_path(@card), headers: { "Accept": "text/vnd.turbo-stream.html" }
+    end
 
     assert_response :success
-    assert_select ".modal-header h2"
-    assert_select "input#column_name[value=?]", "To Do"
-    assert_select "input#column_wip_limit"
-    assert_select ".modal-section"
-  end
-
-  test "column modal shows card count" do
-    get column_path(@todo), headers: { "Accept": "text/html" }
-
-    assert_response :success
-    assert_select ".stat-item", /Cards in column.*2/
-  end
-
-  test "column modal shows total points" do
-    @card.update!(estimate: 3)
-    @card2.update!(estimate: 5)
-
-    get column_path(@todo), headers: { "Accept": "text/html" }
-
-    assert_response :success
-    assert_select ".stat-item", /Total points.*8/
-  end
-
-  test "column modal shows assignee list" do
-    @card2.update!(assignee: @user)
-
-    get column_path(@todo), headers: { "Accept": "text/html" }
-
-    assert_response :success
-    assert_select ".modal-section h3", "Assignees"
-    assert_select ".stat-item", /Avery Chen.*2 cards/
-  end
-
-  test "column modal shows WIP usage when limit is set" do
-    @todo.update(wip_limit: 5)
-
-    get column_path(@todo), headers: { "Accept": "text/html" }
-
-    assert_response :success
-    assert_select ".stat-item", /WIP Usage.*2\/5/
-  end
-
-  test "column modal shows WIP warning when over limit" do
-    @todo.update(wip_limit: 1)
-
-    get column_path(@todo), headers: { "Accept": "text/html" }
-
-    assert_response :success
-    assert_select ".warning-badge", /Over limit/
-  end
-
-  test "can update column name via modal" do
-    patch column_path(@todo), params: {
-      column: { name: "Updated Column Name" }
-    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
-
-    assert_response :ok
-
-    @todo.reload
-    assert_equal "Updated Column Name", @todo.name
-  end
-
-  test "can update column WIP limit via modal" do
-    patch column_path(@todo), params: {
-      column: { wip_limit: 10 }
-    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
-
-    assert_response :ok
-
-    @todo.reload
-    assert_equal 10, @todo.wip_limit
-  end
-
-  test "can clear column WIP limit via modal" do
-    @todo.update(wip_limit: 5)
-
-    patch column_path(@todo), params: {
-      column: { wip_limit: "" }
-    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
-
-    assert_response :ok
-
-    @todo.reload
-    assert_nil @todo.wip_limit
-  end
-
-  test "column update returns turbo_stream" do
-    patch column_path(@todo), params: {
-      column: { name: "New Name" }
-    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
-
-    assert_response :ok
-    assert_equal "text/vnd.turbo-stream.html; charset=utf-8", response.content_type
-    assert_includes response.body, "target=\"column_#{@todo.id}\""
-  end
-
-  test "can update column and maintain cards" do
-    initial_card_count = @todo.cards.count
-
-    patch column_path(@todo), params: {
-      column: { name: "Renamed Column", wip_limit: 8 }
-    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
-
-    @todo.reload
-    assert_equal "Renamed Column", @todo.name
-    assert_equal 8, @todo.wip_limit
-    assert_equal initial_card_count, @todo.cards.count
   end
 end

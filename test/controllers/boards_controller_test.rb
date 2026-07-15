@@ -3,77 +3,65 @@ require "test_helper"
 class BoardsControllerTest < ActionDispatch::IntegrationTest
   setup do
     Board.destroy_all
+    User.destroy_all
 
+    @user = User.create!(name: "Test User", email: "test@example.test")
     @board = Board.create!(name: "Test Board", description: "Test Description")
-    @column1 = @board.columns.create!(name: "To Do", position: 1)
-    @column2 = @board.columns.create!(name: "Doing", position: 2)
-    @card1 = @column1.cards.create!(title: "Card 1", priority: "medium", position: 1)
-    @card2 = @column2.cards.create!(title: "Card 2", priority: "high", position: 1)
+    @todo = @board.columns.create!(name: "To Do", position: 1)
+    @doing = @board.columns.create!(name: "Doing", position: 2, wip_limit: 3)
+    @todo.cards.create!(title: "Card 1", priority: "medium", position: 1)
+    @doing.cards.create!(title: "Card 2", priority: "high", assignee: @user, position: 1)
   end
 
-  test "show renders board" do
+  test "show renders the current board shell" do
     get root_path
 
     assert_response :success
-    assert_select "h1", "Test Board"
-  end
-
-  test "show displays board stats" do
-    get root_path
-
-    assert_response :success
+    assert_select "h1#board_name", "Test Board"
+    assert_select "p#board_description", "Test Description"
     assert_select ".board-stats", /2 cards/
+    assert_select ".board-stats", /1 people/
+    assert_select ".board-menu"
+    assert_select ".menu-btn[data-modal-url=?]", edit_board_path, "Settings"
   end
 
-  test "show displays menu" do
-    get root_path
+  test "edit renders board settings modal" do
+    get edit_board_path, headers: { "Accept": "text/html" }
 
     assert_response :success
-    assert_select ".board-menu"
+    assert_select ".modal-header h2", "Board Settings"
+    assert_select "input[name='board[name]'][value=?]", "Test Board"
+    assert_select "textarea[name='board[description]']", "Test Description"
+    assert_select ".stat-item", /Columns:.*2/
+    assert_select ".stat-item", /Cards:.*2/
+    assert_select ".stat-item", /WIP-limited columns:.*1/
   end
 
-  test "clear removes all cards" do
-    assert_equal 1, @column1.cards.count
-    assert_equal 1, @column2.cards.count
+  test "update changes board settings and returns turbo stream" do
+    patch board_path, params: {
+      board: {
+        name: "Updated Board",
+        description: "Updated Description"
+      }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
 
-    post clear_board_path(@board)
-
-    @column1.reload
-    @column2.reload
-
-    assert_equal 0, @column1.cards.count
-    assert_equal 0, @column2.cards.count
-  end
-
-  test "clear keeps columns intact" do
-    assert_equal 2, @board.columns.count
-
-    post clear_board_path(@board)
+    assert_response :success
+    assert_equal "text/vnd.turbo-stream.html; charset=utf-8", response.content_type
+    assert_includes response.body, "target=\"board_name\""
+    assert_includes response.body, "target=\"board_description\""
 
     @board.reload
-    assert_equal 2, @board.columns.count
-    assert_equal "To Do", @board.columns.first.name
-    assert_equal "Doing", @board.columns.second.name
+    assert_equal "Updated Board", @board.name
+    assert_equal "Updated Description", @board.description
   end
 
-  test "clear redirects to root" do
-    post clear_board_path(@board)
+  test "clear removes cards while keeping columns" do
+    assert_difference "Card.count", -2 do
+      post clear_board_path
+    end
 
     assert_redirected_to root_path
-  end
-
-  test "clear shows notice" do
-    post clear_board_path(@board)
-
     assert_equal "Board cleared successfully", flash[:notice]
-  end
-
-  test "clear with empty board works" do
-    @column1.cards.destroy_all
-    @column2.cards.destroy_all
-
-    post clear_board_path(@board)
-
-    assert_redirected_to root_path
+    assert_equal ["To Do", "Doing"], @board.reload.columns.map(&:name)
   end
 end
