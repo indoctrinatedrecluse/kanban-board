@@ -34,7 +34,8 @@ Kanban Board is a Rails-first proof of concept for managing work across columns 
 - ✅ Refined drag-and-drop with visual feedback and smooth animations.
 - ✅ Card duplication with Ctrl+C / Ctrl+V keyboard shortcuts.
 - ✅ Top menu bar with board clear and settings buttons.
-- ✅ Comprehensive test coverage (42 tests).
+- ✅ Card detail modal: double-click to view/edit all card fields.
+- ✅ Comprehensive test coverage (45 tests).
 
 ## Requirements
 
@@ -167,7 +168,6 @@ ruby bin/rails test
 
 - Add real authentication.
 - Add board CRUD and multiple boards per user.
-- Add card detail/edit modal.
 - Add Turbo Stream updates for drag/drop instead of optimistic-only DOM movement.
 - Add WIP limit warnings.
 - Move from SQLite to PostgreSQL when deployment or concurrency needs justify it.
