@@ -1,0 +1,31 @@
+<%= turbo_frame_tag "assignees_modal" do %>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Manage Assignees</h2>
+      <button class="modal-close" data-action="modal#close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>Current Assignees</h3>
+        <% users.each do |user| %>
+          <div class="stat-item">
+            <span><%= user.name %></span>
+            <%= button_to "Remove", remove_assignee_board_path(id: user.id), method: :delete, class: "menu-btn" %>
+          </div>
+        <% end %>
+      </div>
+      <div class="modal-section">
+        <h3>Add Assignee</h3>
+        <%= form_with url: add_assignee_board_path, method: :post do |form| %>
+          <div class="modal-field">
+            <%= form.label :name %>
+            <%= form.text_field :name, required: true %>
+          </div>
+          <div class="modal-actions">
+            <%= form.submit "Add", class: "modal-save" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

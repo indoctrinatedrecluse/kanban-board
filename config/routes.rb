@@ -3,6 +3,9 @@ Rails.application.routes.draw do
 
   resource :board, only: [:show, :edit, :update] do
     post :clear, on: :member
+    get :assignees, on: :member
+    post :add_assignee, on: :member
+    delete :remove_assignee, on: :member
   end
   resources :columns, only: [:show, :update] do
     resources :cards, only: :create

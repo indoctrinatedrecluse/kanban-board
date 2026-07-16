@@ -709,3 +709,29 @@ select {
     grid-template-columns: repeat(4, minmax(250px, 78vw));
   }
 }
+
+.board-stats .assignees {
+  position: relative;
+}
+
+.board-stats .assignees .edit-assignees {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: white;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  padding: 2px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 150ms ease-out;
+}
+
+.board-stats .assignees:hover .edit-assignees {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.edit-assignees svg {
+  display: block;
+}

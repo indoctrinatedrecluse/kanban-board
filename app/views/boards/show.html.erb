@@ -5,11 +5,7 @@
       <h1 id="board_name"><%= @board.name %></h1>
       <p id="board_description"><%= @board.description %></p>
     </div>
-    <div class="board-stats">
-      <span><strong><%= @board.columns.sum { |column| column.cards.size } %></strong> cards</span>
-      <span><strong><%= @users.size %></strong> people</span>
-    </div>
-  </header>
+    <%= render "boards/stats", board: @board, users: @users %>  </header>
 
   <nav class="board-menu">
     <div class="menu-left">
