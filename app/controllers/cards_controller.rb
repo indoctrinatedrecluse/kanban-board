@@ -62,6 +62,6 @@ class CardsController < ApplicationController
   end
 
   def card_params
-    params.require(:card).permit(:title, :description, :priority, :due_on, :estimate, :labels, :assignee_id)
+    params.require(:card).permit(:title, :description, :priority, :due_on, :estimate, :labels, :assignee_id, custom_fields: {})
   end
 end

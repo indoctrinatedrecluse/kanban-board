@@ -260,4 +260,24 @@ class CardIntegrationTest < ActionDispatch::IntegrationTest
 
     assert_response :success
   end
+
+  test "can add and update custom fields" do
+    patch card_path(@card), params: {
+      card: {
+        custom_fields: {
+          "Story Points" => "8",
+          "Reviewer" => "Mira"
+        }
+      }
+    }, headers: { "Accept": "text/vnd.turbo-stream.html" }
+
+    assert_response :ok
+    @card.reload
+    assert_equal "8", @card.custom_fields["Story Points"]
+    assert_equal "Mira", @card.custom_fields["Reviewer"]
+
+    get root_path
+    assert_select ".custom-field", text: /Story Points: 8/
+    assert_select ".custom-field", text: /Reviewer: Mira/
+  end
 end

@@ -3,7 +3,7 @@
   <button class="modal-close" aria-label="Close modal" data-action="modal#close">&times;</button>
 </div>
 
-<form class="modal-body" data-remote="true" action="<%= card_path(card) %>" method="post">
+<form class="modal-body" data-remote="true" action="<%= card_path(card) %>" method="post" data-controller="custom-fields">
   <input type="hidden" name="_method" value="patch">
   <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
 
@@ -54,6 +54,24 @@
   <div class="modal-field">
     <label for="card_labels">Labels (comma-separated)</label>
     <input type="text" id="card_labels" name="card[labels]" value="<%= card.labels %>" placeholder="e.g. bug, feature, urgent">
+  </div>
+
+  <div class="modal-section">
+    <h3>Custom Fields</h3>
+    <div data-custom-fields-target="fields">
+      <% card.custom_fields.each do |key, value| %>
+        <div class="modal-row" data-custom-fields-target="field">
+          <div class="modal-field">
+            <input type="text" name="card[custom_fields][<%= key %>]" value="<%= key %>" placeholder="Field Name">
+          </div>
+          <div class="modal-field">
+            <input type="text" name="card[custom_fields][<%= key %>]" value="<%= value %>" placeholder="Value">
+          </div>
+          <button type="button" data-action="custom-fields#removeField" class="modal-remove-btn">&times;</button>
+        </div>
+      <% end %>
+    </div>
+    <button type="button" data-action="custom-fields#addField" class="modal-add-btn">Add Field</button>
   </div>
 
   <div class="modal-actions">

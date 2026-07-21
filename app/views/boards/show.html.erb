@@ -5,11 +5,12 @@
       <h1 id="board_name"><%= @board.name %></h1>
       <p id="board_description"><%= @board.description %></p>
     </div>
-    <%= render "boards/stats", board: @board, users: @users %>  </header>
+    <%= render "boards/stats", board: @board, users: @users %>
+  </header>
 
-  <nav class="board-menu">
+  <nav class="board-menu" data-controller="filter">
     <div class="menu-left">
-      <span class="keyboard-hint"><strong>Ctrl+C</strong> to copy a card | <strong>Ctrl+V</strong> to paste</span>
+      <input type="search" placeholder="Filter cards..." class="filter-input" data-action="input->filter#search">
     </div>
     <div class="menu-right">
       <button class="menu-btn" title="Clear board" onclick="if(confirm('Clear all cards? This cannot be undone.')) { location.href = '/boards/clear'; }">

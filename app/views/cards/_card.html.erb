@@ -20,10 +20,22 @@
     <p><%= card.description %></p>
   <% end %>
 
+  <% if card.custom_fields.any? %>
+    <div class="custom-fields">
+      <% card.custom_fields.each do |key, value| %>
+        <div class="custom-field">
+          <strong><%= key %>:</strong> <%= value %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
   <% if card.label_list.any? %>
     <div class="labels">
       <% card.label_list.each do |label| %>
-        <span><%= label %></span>
+        <% bg_color = card.label_color(label) %>
+        <% text_color = card.text_color_for_bg(bg_color) %>
+        <span style="background-color: <%= bg_color %>; color: <%= text_color %>;"><%= label %></span>
       <% end %>
     </div>
   <% end %>
